@@ -1,18 +1,31 @@
 const mongoose = require("mongoose");
 const ApiError = require("../api-error");
 const TrackingService = require("../services/trackings.service");
+const BookService = require("../services/books.service");
+
 const MongoDB = require("../utils/mongodb.util");
 exports.create = async (req, res, next) => {
-  if (!req.body?.MASACH || !req.body?.MADOCGIA || !req.body?.MSNV) {
+  if (!req.body?.MASACH || !req.body?.MADOCGIA) {
     return next(new ApiError(400, "Name cannot be empy"));
   }
+
   try {
+    const bookService = new BookService(MongoDB.client);
+    const book = await bookService.decreaseQuantity(req.body?.MASACH);
+    if (book.SO_QUYEN < 1) {
+      return next(
+        new ApiError(
+          400,
+          `This book with _id = ${req.body?.MASACH}is not availble`
+        )
+      );
+    }
     const trackingService = new TrackingService(MongoDB.client);
     const document = await trackingService.create(req.body);
+
     return res.send(document);
   } catch (error) {
     console.error("Error fetching", error.message);
-
     return next(
       new ApiError(500, "An error occurred while creating the trackings")
     );

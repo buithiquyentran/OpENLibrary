@@ -9,7 +9,7 @@ exports.create = async (req, res, next) => {
     const bookService = new BookService(MongoDB.client);
     const document = await bookService.create(req.body);
     return res.send(document);
-  } catch (error) { 
+  } catch (error) {
     console.error("Error fetching", error.message);
 
     return next(
@@ -49,7 +49,7 @@ exports.findOne = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   if (Object.keys(req.body).length == 0) {
     return next(new ApiError(400, "Data to update can not be empty"));
-  } 
+  }
   try {
     const bookService = new BookService(MongoDB.client);
     const document = await bookService.update(req.params.id, req.body);
@@ -90,17 +90,6 @@ exports.deleteAll = async (req, res, next) => {
   } catch (error) {
     return next(
       new ApiError(500, "An error occurred while removing all books")
-    );
-  }
-};
-exports.findAllFavorite = async (req, res, next) => {
-  try {
-    const bookService = new BookService(MongoDB.client);
-    const documents = await bookService.findFavorite();
-    return res.send(documents);
-  } catch (error) {
-    return next(
-      new ApiError(500, "An error occurred while retrieving favorite books")
     );
   }
 };

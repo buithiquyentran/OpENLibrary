@@ -8,10 +8,10 @@ class StaffService {
   extractStaffData(payload) {
     const staff = {
       HOTEN_NV: payload.HOTEN_NV,
-      PASSWORD: payload.PASSWORD,
       CHUCVU: payload.CHUCVU,
       DIACHI: payload.DIACHI,
-      SODIENTHOAI: payload.SODIENTHOAI,
+      SDTNV: payload.SDTNV,
+      USERNAME: payload.USERNAME,
     };
     // Remove undefined fields
     Object.keys(staff).forEach(
@@ -22,16 +22,30 @@ class StaffService {
 
   async create(payload) {
     const staff = this.extractStaffData(payload);
+
+    const sdtExist = await this.Staff.findOne({ SDTNV: staff.SDTNV });
+    if (sdtExist) throw new Error("SDT exist");
+
+    if (ObjectId.isValid(staff.USERNAME)) {
+      staff.USERNAME = new ObjectId(staff.USERNAME);
+    }
     const result = await this.Staff.insertOne(staff);
     return result;
   }
+
   async find(filter) {
     const cursor = await this.Staff.find(filter);
     return await cursor.toArray();
   }
+
   async findByName(name) {
     return await this.find({
       name: { $regex: new RegExp(new RegExp(name)), $options: "i" }, // bieu thuc chinh quy, khong phan biet hoa thuong
+    });
+  }
+  async findByUsername(USERNAME) {
+    return await this.Staff.findOne({
+      USERNAME: USERNAME, // bieu thuc chinh quy, khong phan biet hoa thuong
     });
   }
   async findById(id) {
@@ -39,6 +53,7 @@ class StaffService {
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });
   }
+
   async update(id, payload) {
     const filter = {
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
@@ -52,18 +67,21 @@ class StaffService {
     // console.log(result);
     return result;
   }
-  async delete(id) {
+  async deleteById(id) {
     const result = await this.Staff.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });
     return result;
   }
-  async findFavorite() {
-    return await this.find({ favorite: true });
+  async deleteByUsername(username) {
+    const result = await this.Staff.findOneAndDelete({
+      USERNAME: username ? username : null,
+    });
+    return result;
   }
   async deleteAll() {
     const result = await this.Staff.deleteMany({});
     return result.deletedCount;
-  } 
+  }
 }
 module.exports = StaffService;

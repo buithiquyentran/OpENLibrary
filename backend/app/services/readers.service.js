@@ -12,7 +12,8 @@ class ReaderService {
       NGAY_SINH: payload.NGAY_SINH,
       PHAI: payload.PHAI,
       DIA_CHI: payload.DIA_CHI,
-      DIENTHOAI: payload.DIENTHOAI,
+      SDTDG: payload.SDTDG,
+      USERNAME: payload.USERNAME,
     };
     // Remove undefined fields
     Object.keys(reader).forEach(
@@ -23,9 +24,13 @@ class ReaderService {
 
   async create(payload) {
     const reader = this.extractReaderData(payload);
-    if (reader.MA_NXB) {
-      reader.MA_NXB = ObjectId(reader.MA_NXB);
+
+    if (ObjectId.isValid(reader.USERNAME)) {
+      reader.USERNAME = new ObjectId(reader.USERNAME);
     }
+    const sdtExist = await this.Reader.findOne({ SDTDG: reader.SDTDG });
+    if (sdtExist) throw new Error("SDT exist");
+
     const result = await this.Reader.insertOne(reader);
     return result;
   }
@@ -36,6 +41,11 @@ class ReaderService {
   async findByName(name) {
     return await this.find({
       name: { $regex: new RegExp(new RegExp(name)), $options: "i" }, // bieu thuc chinh quy, khong phan biet hoa thuong
+    });
+  }
+  async findByUsername(USERNAME) {
+    return await this.Reader.findOne({
+      USERNAME: USERNAME, // bieu thuc chinh quy, khong phan biet hoa thuong
     });
   }
   async findById(id) {
@@ -59,6 +69,12 @@ class ReaderService {
   async delete(id) {
     const result = await this.Reader.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+    });
+    return result;
+  }
+  async deleteByUsername(username) {
+    const result = await this.Reader.findOneAndDelete({
+      USERNAME: username ? username : null,
     });
     return result;
   }

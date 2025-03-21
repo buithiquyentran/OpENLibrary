@@ -1,17 +1,35 @@
 const ApiError = require("../api-error");
 const StaffService = require("../services/staffs.service");
 const MongoDB = require("../utils/mongodb.util");
+const AuthService = require("../services/auth.service");
+
 exports.create = async (req, res, next) => {
   if (!req.body?.HOTEN_NV) {
     return next(new ApiError(400, "Name cannot be empy"));
   }
-  try {
+  try { 
+    // Thêm user
+    const authService = new AuthService(MongoDB.client);
+
+    const user = await authService.createStaff({
+      PASSWORD: req.body.PASSWORD,
+      USERNAME: req.body.SDTNV,
+    });
+
     const staffService = new StaffService(MongoDB.client);
-    const document = await staffService.create(req.body);
-    return res.send(document);
+    const document = await staffService.create({
+      HOTEN_NV: req.body.HOTEN_NV,
+      CHUCVU: req.body.CHUCVU,
+      DIACHI: req.body.DIACHI,
+      SDTNV: req.body.SDTNV,
+      USERNAME: req.body.SDTNV,
+    });
+
+    res.status(201).send({document, user});
+
   } catch (error) {
     console.error("Error fetching", error.message);
-
+    res.status(400).json({ error: error.toString() });
     return next(new ApiError(500, "An error occurred while creating the nxbs"));
   }
 };
@@ -30,6 +48,7 @@ exports.findAll = async (req, res, next) => {
   }
   return res.send(documents);
 };
+
 exports.findOne = async (req, res, next) => {
   try {
     const staffService = new StaffService(MongoDB.client);
@@ -44,6 +63,7 @@ exports.findOne = async (req, res, next) => {
     );
   }
 };
+
 exports.update = async (req, res, next) => {
   if (Object.keys(req.body).length == 0) {
     return next(new ApiError(400, "Data to update can not be empty"));

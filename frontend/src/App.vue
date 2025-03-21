@@ -1,7 +1,25 @@
-<script setup></script>
+<script>
+import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
+
+export default {
+  components: {
+    Navbar,
+    Footer,
+  },
+};
+</script>
 
 <template>
-  <h1>Hello</h1>
+  <div id="app">
+    <Navbar />
+    <body>
+      <router-view />
+    </body>
+    <Footer />
+  </div>
 </template>
 
-<style scoped></style>
+<style>
+
+</style>

@@ -87,16 +87,16 @@ class TrackingService {
   }
   async find() {
     const result = await this.Tracking.aggregate([
-      {
-        $match: {
-          NGAYTRA: null, // Lọc những sách chưa trả (tuỳ chỉnh nếu cần)
-        },
-      },
+      // {  
+      //   $match: {
+      //     NGAYTRA: null, // Lọc những sách chưa trả (tuỳ chỉnh nếu cần)
+      //   },
+      // },
       {
         $lookup: {
           from: "SACH", // Bảng chứa sách
-          localField: "MASACH", // Trường trong bảng MUONSACH
-          foreignField: "_id", // Trường tương ứng trong bảng SACH
+          localField: "MASACH", 
+          foreignField: "_id", 
           as: "sach_info", // Kết quả gom vào mảng sach_info
         },
       },

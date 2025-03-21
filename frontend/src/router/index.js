@@ -1,10 +1,22 @@
 import { createWebHistory, createRouter } from "vue-router";
-// import ContactBook from "@/views/ContactBook.vue";
+import Home from "@/views/Home.vue";
 const routes = [
   {
     path: "/",
-    name: "contactbook",
-    // component: ContactBook,
+    name: "home",
+    component: Home,
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("@/views/Login.vue"),
+    props: true, // Truyền các biến trong $route.params vào làm props
+  },
+  {
+    path: "/books", 
+    name: "books",
+    component: () => import("@/views/Books.vue"),
+    props: true, // Truyền các biến trong $route.params vào làm props
   },
 ];
 const router = createRouter({
