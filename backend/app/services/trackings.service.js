@@ -9,8 +9,7 @@ class TrackingService {
     const tracking = {
       MASACH: payload.MASACH,
       MADOCGIA: payload.MADOCGIA,
-      MSNV: payload.MSNV,
-      NGAYMUON: payload.NGAYMUON,
+      NGAYMUON: payload.NGAYMUON || new Date().toISOString().split("T")[0],
       NGAYTRA: payload.NGAYTRA,
     };
 
@@ -21,12 +20,6 @@ class TrackingService {
     return tracking;
   }
 
-  // async create(payload) {
-  //   const tracking = this.extractTrackingData(payload);
-
-  //   const result = await this.Tracking.insertOne(tracking);
-  //   return result;
-  // }
   async create(payload) {
     const tracking = this.extractTrackingData(payload);
 
@@ -37,10 +30,6 @@ class TrackingService {
     if (ObjectId.isValid(tracking.MADOCGIA)) {
       tracking.MADOCGIA = new ObjectId(tracking.MADOCGIA);
     }
-    if (ObjectId.isValid(tracking.MSNV)) {
-      tracking.MSNV = new ObjectId(tracking.MSNV);
-    }
-
     const result = await this.Tracking.insertOne(tracking);
     return result;
   }
@@ -53,6 +42,65 @@ class TrackingService {
     return await this.find({
       name: { $regex: new RegExp(new RegExp(name)), $options: "i" }, // bieu thuc chinh quy, khong phan biet hoa thuong
     });
+  }
+
+  async findByMaDocGia(MADOCGIA) {
+    // return await this.Tracking.find({
+    //   MADOCGIA: ObjectId.isValid(MADOCGIA) ? new ObjectId(MADOCGIA) : MADOCGIA,
+    // }).toArray();
+    const result = await this.Tracking.aggregate([
+      {
+        $match: {
+          MADOCGIA: ObjectId.isValid(MADOCGIA)
+            ? new ObjectId(MADOCGIA)
+            : MADOCGIA,
+        },
+      },
+      {
+        $lookup: {
+          from: "SACH", // Bảng chứa sách
+          localField: "MASACH",
+          foreignField: "_id",
+          as: "sach_info", // Kết quả gom vào mảng sach_info
+        },
+      },
+      {
+        $lookup: {
+          from: "DOCGIA",
+          localField: "MADOCGIA",
+          foreignField: "_id",
+          as: "docgia_info",
+        },
+      },
+
+      {
+        $unwind: "$sach_info", // Chuyển mảng thành object
+      },
+      {
+        $unwind: "$docgia_info",
+      },
+
+      {
+        $project: {
+          _id: 1,
+          MASACH: 1,
+          MADOCGIA: 1,
+          NGAYMUON: 1,
+          NGAYTRA: 1,
+          SACH: {
+            TEN_SACH: "$sach_info.TEN_SACH",
+            TAC_GIA: "$sach_info.TAC_GIA",
+          },
+          DOCGIA: {
+            HO_LOT: "$docgia_info.HO_LOT",
+            TEN: "$docgia_info.TEN",
+            USERNAME: "$docgia_info.USERNAME",
+          },
+        },
+      },
+    ]).toArray();
+
+    return result;
   }
   async findById(id) {
     return await this.Tracking.findOne({
@@ -87,7 +135,7 @@ class TrackingService {
   }
   async find() {
     const result = await this.Tracking.aggregate([
-      // {  
+      // {
       //   $match: {
       //     NGAYTRA: null, // Lọc những sách chưa trả (tuỳ chỉnh nếu cần)
       //   },
@@ -95,8 +143,8 @@ class TrackingService {
       {
         $lookup: {
           from: "SACH", // Bảng chứa sách
-          localField: "MASACH", 
-          foreignField: "_id", 
+          localField: "MASACH",
+          foreignField: "_id",
           as: "sach_info", // Kết quả gom vào mảng sach_info
         },
       },
@@ -108,39 +156,29 @@ class TrackingService {
           as: "docgia_info",
         },
       },
-      {
-        $lookup: {
-          from: "NHANVIEN",
-          localField: "MSNV",
-          foreignField: "_id",
-          as: "nhanvien_info",
-        },
-      },
+
       {
         $unwind: "$sach_info", // Chuyển mảng thành object
       },
       {
         $unwind: "$docgia_info",
       },
-      {
-        $unwind: "$nhanvien_info",
-      },
+
       {
         $project: {
           _id: 1,
+          MASACH: 1,
+          MADOCGIA: 1,
+          NGAYMUON: 1,
           NGAYTRA: 1,
-          sach: {
+          SACH: {
             TEN_SACH: "$sach_info.TEN_SACH",
             TAC_GIA: "$sach_info.TAC_GIA",
           },
-          docgia: {
+          DOCGIA: {
             HO_LOT: "$docgia_info.HO_LOT",
             TEN: "$docgia_info.TEN",
-            DIENTHOAI: "$docgia_info.DIENTHOAI",
-          },
-          nhanvien: {
-            HOTEN_NV: "$nhanvien_info.HOTEN_NV",
-            CHUCVU: "$nhanvien_info.CHUCVU",
+            USERNAME: "$docgia_info.USERNAME",
           },
         },
       },

@@ -67,7 +67,7 @@ class StaffService {
     // console.log(result);
     return result;
   }
-  async deleteById(id) {
+  async delete(id) {
     const result = await this.Staff.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });

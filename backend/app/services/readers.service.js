@@ -25,9 +25,9 @@ class ReaderService {
   async create(payload) {
     const reader = this.extractReaderData(payload);
 
-    if (ObjectId.isValid(reader.USERNAME)) {
-      reader.USERNAME = new ObjectId(reader.USERNAME);
-    }
+    // if (ObjectId.isValid(reader.USERNAME)) {
+    //   reader.USERNAME = new ObjectId(reader.USERNAME);
+    // }
     const sdtExist = await this.Reader.findOne({ SDTDG: reader.SDTDG });
     if (sdtExist) throw new Error("SDT exist");
 

@@ -54,28 +54,38 @@ class AuthService {
     return { token, user: userExist };
   }
 
-
-
   async findByUsername(USERNAME) {
     return await this.User.findOne({
       USERNAME: USERNAME, // bieu thuc chinh quy, khong phan biet hoa thuong
     });
   }
-
+  async findById(id) {
+    return await this.User.findOne({
+      _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+    });
+  }
   async createStaff(payload) {
     const user = this.extractUserData(payload);
     user.ROLE = 1;
+    user.PASSWORD = await bcrypt.hash(user.PASSWORD, 10);
     const sdtExist = await this.User.findOne({ USERNAME: user.USERNAME });
     if (sdtExist) throw new Error("SDT exist");
 
     const result = await this.User.insertOne(user);
     return result;
   }
-  async delete(username) {
+
+  // async delete(username) {
+  //   const result = await this.User.findOneAndDelete({
+  //     USERNAME: username ? username : null,
+  //   });
+
+  //   return result;
+  // }
+  async deleteByUsername(username) {
     const result = await this.User.findOneAndDelete({
       USERNAME: username ? username : null,
     });
-
     return result;
   }
 }

@@ -9,6 +9,7 @@ class BookService {
     const book = {
       TEN_SACH: payload.TEN_SACH,
       DON_GIA: payload.DON_GIA,
+      SO_QUYEN_SAN_CO: payload.SO_QUYEN_SAN_CO || payload.SO_QUYEN,
       SO_QUYEN: payload.SO_QUYEN,
       NAM_XUAT_BAN: payload.NAM_XUAT_BAN,
       TAC_GIA: payload.TAC_GIA,
@@ -48,10 +49,11 @@ class BookService {
           TEN_SACH: 1,
           DON_GIA: 1,
           SO_QUYEN: 1,
+          SO_QUYEN_SAN_CO: 1,
           NAM_XUAT_BAN: 1,
           TAC_GIA: 1,
           IMG: 1,
-
+          MA_NXB: 1,
           NXB: {
             TEN_NXB: "$nxb_info.TEN_NXB",
             DIA_CHI: "$nxb_info.DIA_CHI",
@@ -92,6 +94,7 @@ class BookService {
           TEN_SACH: 1,
           DON_GIA: 1,
           SO_QUYEN: 1,
+          SO_QUYEN_SAN_CO: 1,
           NAM_XUAT_BAN: 1,
           TAC_GIA: 1,
           IMG: 1,
@@ -137,15 +140,27 @@ class BookService {
     if (!ObjectId.isValid(id)) {
       return null; // Trả về null nếu ID không hợp lệ
     }
-
     const filter = { _id: new ObjectId(id) };
-    const update = { $inc: { SO_QUYEN: -1 } }; // Giảm SO_QUYEN đi 1
+    const update = { $inc: { SO_QUYEN_SAN_CO: -1 } }; // Giảm SO_QUYEN_SAN_CO đi 1
 
     const result = await this.Book.findOneAndUpdate(
       filter,
       update,
       { returnDocument: "after" } // Trả về sách sau khi cập nhật
     );
+
+    return result;
+  }
+  async increaseQuantity(id) {
+    if (!ObjectId.isValid(id)) {
+      return null; // Trả về null nếu ID không hợp lệ
+    }
+    const filter = { _id: new ObjectId(id) };
+    const update = { $inc: { SO_QUYEN_SAN_CO: +1 } }; // Tăng SO_QUYEN_SAN_CO đi 1
+ 
+    const result = await this.Book.findOneAndUpdate(filter, update, {
+      returnDocument: "after",
+    });
 
     return result;
   }

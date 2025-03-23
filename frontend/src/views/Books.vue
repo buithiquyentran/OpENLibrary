@@ -7,22 +7,24 @@
     <div class="row">
       <BookCard v-for="book in filteredBooks" :key="book._id" :book="book" />
     </div>
-  </div>
+  </div> 
 </template>
 
 <script>
 import BookCard from "@/components/BookCard.vue";
 import BookService from "@/services/book.service";
+
 export default {
   components: { BookCard },
   data() {
     return {
       books: [],
-      searchQuery: this.$route.query.q || "", // Lấy từ khóa từ URL
+      searchQuery: "", // Lấy từ khóa từ URL
+     
     };
   },
   computed: {
-    // Chuyển các đối tượng book thành chuỗi để tiện cho tìm kiếm.
+    // Chuyển các đối tượng book  thành chuỗi để tiện cho tìm kiếm.
     bookStrings() {
       return this.books.map((book) => {
         const { TEN_SACH, DON_GIA, NAM_XUAT_BAN, TAC_GIA, NXB } = book;
@@ -40,27 +42,20 @@ export default {
           .includes(this.searchQuery.toLowerCase())
       );
     },
-    // activeContact() {
-    //   if (this.activeIndex < 0) return null;
-    //   return this.filteredBooks[this.activeIndex];
-    // },
-    // filteredContactsCount() {
-    //   return this.filteredBooks.length;
-    // },
   },
   methods: {
     async fetchBooks() {
       try {
-        const response = await BookService.getAll();
-        // console.log(response);
-        if (response) {
-          this.books = response;
+        const books = await BookService.getAll();
+        if (books) {
+          this.books = books;
         }
       } catch (error) {
         this.books = [];
         console.log(error);
       }
     },
+
   },
   watch: {
     "$route.query.q"(newQuery) {
@@ -69,6 +64,7 @@ export default {
   },
   created() {
     this.fetchBooks();
+    
   },
 };
 </script>

@@ -13,9 +13,21 @@ const routes = [
     props: true, // Truyền các biến trong $route.params vào làm props
   },
   {
-    path: "/books", 
+    path: "/books",
     name: "books",
     component: () => import("@/views/Books.vue"),
+    props: true, // Truyền các biến trong $route.params vào làm props
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: () => import("@/views/Profile.vue"),
+    props: true, // Truyền các biến trong $route.params vào làm props
+  },
+  {
+    path: "/history",
+    name: "history",
+    component: () => import("@/views/History.vue"),
     props: true, // Truyền các biến trong $route.params vào làm props
   },
 ];

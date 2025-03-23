@@ -52,6 +52,7 @@ exports.login = async (req, res, next) => {
         sameSite: "None",
         maxAge: 60 * 60 * 1000 * 24 * 7, // 1 giờ
       });
+
       res.status(200).json({ message: "Đăng nhập thành công", user, token });
     } else {
       res.status(500).json({ message: "Đăng nhập thất bại" });
@@ -92,42 +93,6 @@ exports.delete = async (req, res, next) => {
     );
   }
 };
-
-exports.getUserInfo = async (req, res) => {
-  try {
-    // Lấy token từ cookie
-    console.log("Cookies từ client:", req.cookies);
-    const token = req.cookies?.jwt;
-    if (!token) {
-      return res.status(401).json({ message: "Chưa đăng nhập" });
-    }
-    const authService = new AuthService(MongoDB.client);
-    // Giải mã token với xử lý lỗi
-    let decoded;
-    try {
-      decoded = jwt.verify(token, "SECRET_KEY");
-    } catch (error) {
-      return res
-        .status(403)
-        .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
-    }
-
-    // if (!USERNAME) {
-    //   return res.status(400).json({ message: "Token không hợp lệ" });
-    // }
-    const { USERNAME } = decoded;
-    // Tìm người dùng trong database
-    const user = await authService.findByUsername(USERNAME);
-    if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
-    }
-    res.status(200).json({ user });
-  } catch (error) {
-    console.error("Lỗi lấy thông tin người dùng:", error);
-    res.status(500).json({ message: "Lỗi server" });
-  }
-};
-
 exports.getUserInfo = async (req, res) => {
   const authService = new AuthService(MongoDB.client);
   const readerService = new ReaderService(MongoDB.client);
@@ -150,7 +115,9 @@ exports.getUserInfo = async (req, res) => {
         .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 
-    const USERNAME = decoded?.USERNAME;
+    // const USERNAME = decoded?.USERNAME;
+    const { USERNAME, ROLE } = decoded;
+
     if (!USERNAME) {
       return res.status(400).json({ message: "Token không hợp lệ" });
     }
@@ -167,15 +134,46 @@ exports.getUserInfo = async (req, res) => {
 
     // Trả về thông tin người dùng (ẩn đi mật khẩu để bảo mật)
     // const { PASSWORD, ...userWithoutPassword } = user;
-    res.status(200).json({ user });
+    res.status(200).json({ ...user, ROLE });
   } catch (error) {
     console.error("Lỗi lấy thông tin người dùng:", error);
     res.status(500).json({ message: "Lỗi server" });
   }
 };
 
-  // Đăng xuất
+// Đăng xuất
 exports.logout = (req, res) => {
   res.clearCookie("jwt", { httpOnly: true, secure: true, sameSite: "None" });
   res.status(200).json({ message: "Đăng xuất thành công!" });
 };
+
+// Create staff
+// exports.createStaff = async (req, res) => {
+//   if (!req.body?.SDTDG || !req.body?.PASSWORD) {
+//     return next(new ApiError(400, "Username and password cannot be empy"));
+//   }
+//   try {
+//     const user_data = {
+//       USERNAME: req.body.SDTNV,
+//       PASSWORD: req.body.PASSWORD,
+//     };
+//     const staff_data = {
+//       HOTEN_NV: req.body.HOTEN_NV,
+//       CHUCVU: req.body.CHUCVU,
+//       DIACHI: req.body.DIACHI,
+//       SDTNV: req.body.SDTNV,
+//       USERNAME: req.body.USERNAME,
+//     };
+//     // Thêm user
+//     const authService = new AuthService(MongoDB.client);
+//     const user = await authService.register(user_data);
+//     // Thêm staff
+//     const staffService = new StaffService(MongoDB.client);
+//     const staff = await staffService.create(staff_data);
+//     res.status(201).json({ user, staff });
+//   } catch (error) {
+//     console.error("Error fetching", error);
+//     // res.status(400).json(error);
+//     res.status(400).json({ error: error.toString() });
+//   }
+// };

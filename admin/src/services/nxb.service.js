@@ -1,14 +1,11 @@
 import createApiClient from "./api.service";
 
-class TrackingService {
-  constructor(baseUrl = "/api/trackings") {
+class BookService {
+  constructor(baseUrl = "/api/nxbs") {
     this.api = createApiClient(baseUrl);
   }
   async getAll() {
     return (await this.api.get("/")).data;
-  }
-  async getHistory(MADOCGIA) {
-    return (await this.api.get(`/my-borrow/${MADOCGIA}`)).data;
   }
   async create(data) {
     return (await this.api.post("/", data)).data;
@@ -27,4 +24,4 @@ class TrackingService {
   }
 }
 
-export default new TrackingService();
+export default new BookService();

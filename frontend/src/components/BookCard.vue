@@ -6,12 +6,12 @@
       <p>Tác giả: {{ book.TAC_GIA }}</p>
       <p>Giá: {{ book.DON_GIA }} VNĐ</p>
       <p>Nhà xuất bản: {{ book.NXB.TEN_NXB }}</p>
-      <p>Số lượng có sẵn: {{ book.SO_QUYEN }} quyển</p>
+      <p>Số lượng có sẵn: {{ book.SO_QUYEN_SAN_CO }} quyển</p>
       <button
-        :disabled="book.SO_QUYEN < 1"
+        :disabled="book.SO_QUYEN_SAN_CO < 1 || unreturnedBooksCount >= 3"
         class="btn btn-success btn-borrow"
         @click="borrowBook"
-        :title="book.SO_QUYEN < 1 ? 'Hết sách, không thể mượn' : ''"
+        :title="getBorrowButtonTitle()"
       >
         Đặt Mượn Sách Trong 2 Tuần
       </button>
@@ -22,12 +22,12 @@
 <script>
 import TrackingService from "@/services/tracking.service";
 import AuthService from "@/services/auth.service";
-
 export default {
   props: ["book"],
   data() {
     return {
       user_id: "",
+      unreturnedBooksCount: 0,
     };
   },
   methods: {
@@ -37,14 +37,12 @@ export default {
           MASACH: this.book._id,
           MADOCGIA: this.user_id,
         };
-        // console.log(data);
         const isConfirmed = confirm(
           `Bạn có chắc chắn muốn mượn sách "${this.book.TEN_SACH}" không?`
         );
 
         if (!isConfirmed) return;
         const response = await TrackingService.create(data);
-        alert(`Mượn sách: ${this.book.TEN_SACH}`);
       } catch (error) {
         console.log(error);
       }
@@ -52,17 +50,50 @@ export default {
     async getUserInfo() {
       try {
         const response = await AuthService.getUserInfo();
-        console.log(response.user._id);
+        console.log(response._id);
         if (response) {
-          this.user_id = response.user._id;
+          this.user_id = response._id;
         }
       } catch (error) {
         console.log(error);
       }
     },
+    async fetchBorrowHistory() {
+      try {
+        // get user_data
+        const user = await AuthService.getUserInfo();
+        const MADOCGIA = user._id;
+        // lấy lịch sử mượn dựa trên mã đọc giả
+        const response = await TrackingService.getHistory(MADOCGIA);
+        if (response) {
+          console.log(response);
+          this.borrowHistory = response;
+        }
+        if (response) {
+          console.log(response);
+          this.unreturnedBooksCount = response.filter(
+            (record) => !record.NGAYTRA
+          ).length;
+          console.log(this.unreturnedBooksCount);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy lịch sử mượn sách:", error);
+      }
+    },
+    getBorrowButtonTitle() {
+      if (this.unreturnedBooksCount >= 3) {
+        return "Đã đạt tới số lượng mượn cho phép (3 sách)";
+      }
+      if (this.book.SO_QUYEN_SAN_CO < 1) {
+        return "Hết sách, không thể mượn";
+      }
+
+      return "";
+    },
   },
   created() {
     this.getUserInfo();
+    this.fetchBorrowHistory();
   },
 };
 </script>

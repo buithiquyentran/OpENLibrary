@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <a class="navbar-brand" href="#"> 📖 Open Library</a>
+      <router-link class="navbar-brand" to="/"> 📖 Open Library</router-link>
       <button
         class="navbar-toggler"
         type="button"
@@ -13,7 +13,7 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
             <router-link
@@ -53,9 +53,12 @@
             >
           </li>
         </ul>
+      </div> -->
+      <div class="text-light">
+        Xin chào {{ user.HOTEN_NV }}, bạn đang đăng nhập với vai trò admin
       </div>
       <!-- Search -->
-      <form
+      <!-- <form
         class="d-flex"
         @keyup.enter="searchBooks"
         @submit.prevent="searchBooks"
@@ -68,13 +71,12 @@
           v-model="searchQuery"
         />
         <button class="btn btn-outline-success" type="submit">Search</button>
-      </form>
+      </form> -->
       <div>
         <router-link
           v-if="!isLoggedIn"
           class="nav-link login-btn"
           :class="{ active: isActive('login') }"
-          href="#"
           @click.prevent="navigate('login')"
           to="/login"
           >Login</router-link
@@ -92,7 +94,7 @@
         style="width: 200px; z-index: 1000"
       >
         <p v-if="user" class="fw-bold text-dark mb-2">
-          Xin chào, {{ user.HO_LOT }} {{ user.TEN }}
+          Xin chào, {{ user.HOTEN_NV }}
         </p>
         <hr />
 
@@ -104,19 +106,19 @@
           >
             <i class="fa fa-user"></i> Tài khoản
           </li>
-          <!-- <li
+          <li
             class="py-1 px-2 cursor-pointer text-dark"
             @click="goToPersonalInfo"
             style="cursor: pointer !important"
           >
             <i class="fa fa-id-card"></i> Thông tin cá nhân
-          </li> -->
+          </li>
           <li
             class="py-1 px-2 cursor-pointer text-dark"
             style="cursor: pointer !important"
-            @click="goToHistory"
+            @click="goToChangAccount"
           >
-            <i class="fa fa-book"></i> Lịch sử mượn sách
+            <i class="fa fa-book"></i> Chuyển đổi tài khoản
           </li>
           <li
             class="py-1 px-2 cursor-pointer text-danger"
@@ -157,7 +159,7 @@ export default {
       try {
         const response = await AuthService.getUserInfo();
         // console.log(response);
-        if (response && response.ROLE == 2) {
+        if (response) {
           this.isLoggedIn = true;
           this.user = response;
         }
@@ -177,8 +179,8 @@ export default {
       this.$router.push("/personal-info");
       this.showTooltip = false;
     },
-    goToHistory() {
-      this.$router.push("/history");
+    goToChangAccount() {
+      this.$router.push("/login");
       this.showTooltip = false;
     },
     async logout() {
@@ -255,5 +257,7 @@ export default {
 .my-account {
   right: 100px;
   top: 32px;
+  width: unset !important;
+  max-width: 400px;
 }
 </style>

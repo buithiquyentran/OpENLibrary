@@ -7,7 +7,7 @@ exports.create = async (req, res, next) => {
   if (!req.body?.HOTEN_NV) {
     return next(new ApiError(400, "Name cannot be empy"));
   }
-  try { 
+  try {
     // Thêm user
     const authService = new AuthService(MongoDB.client);
 
@@ -25,8 +25,7 @@ exports.create = async (req, res, next) => {
       USERNAME: req.body.SDTNV,
     });
 
-    res.status(201).send({document, user});
-
+    res.status(201).send({ document, user });
   } catch (error) {
     console.error("Error fetching", error.message);
     res.status(400).json({ error: error.toString() });
@@ -85,8 +84,14 @@ exports.update = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   try {
     const staffService = new StaffService(MongoDB.client);
-    const document = await staffService.delete(req.params.id);
-    if (!document) {
+    const authService = new AuthService(MongoDB.client);
+
+    const staff = await staffService.findById(req.params.id);
+    const username = staff.USERNAME;
+    const response1 = await authService.deleteByUsername(username);
+    const response2 = await staffService.delete(req.params.id);
+
+    if (!response1 || !response2) {
       return next(new ApiError(404, "Book not found"));
     }
     return res.send({ message: "Book was deleted successfully" });
@@ -110,14 +115,4 @@ exports.deleteAll = async (req, res, next) => {
     return next(new ApiError(500, "An error occurred while removing all nxbs"));
   }
 };
-exports.findAllFavorite = async (req, res, next) => {
-  try {
-    const staffService = new StaffService(MongoDB.client);
-    const documents = await staffService.findFavorite();
-    return res.send(documents);
-  } catch (error) {
-    return next(
-      new ApiError(500, "An error occurred while retrieving favorite nxbs")
-    );
-  }
-};
+

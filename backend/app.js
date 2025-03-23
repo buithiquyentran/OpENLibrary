@@ -11,9 +11,14 @@ const trackingsRouter = require("./app/routes/tracking.route");
 const authRouter = require("./app/routes/auth.route");
 
 const ApiError = require("./app/api-error");
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"], // Cho phép truy cập từ frontend và admin
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use(cookieParser());  
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to OpENLibrary." });
 });

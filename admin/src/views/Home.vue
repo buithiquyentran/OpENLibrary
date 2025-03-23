@@ -1,9 +1,9 @@
 <template>
   <div class="home-banner">
     <div class="container mt-4 welcom-text">
-      <h2>Chào mừng đến 📖 Open Library</h2>
-      <p>Nơi khám phá hàng nghìn cuốn sách !</p>
-      <router-link to="/books" class="btn btn-success">Xem sách</router-link>
+      <h2>Chào mừng admin đến 📖 Open Library</h2>
+      <p>Hôm nay bạn muốn làm gì nào !</p>
+      <router-link to="/books" class="btn btn-success">Bắt đầu</router-link>
     </div>
   </div>
 </template>

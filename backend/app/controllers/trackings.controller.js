@@ -12,7 +12,7 @@ exports.create = async (req, res, next) => {
   try {
     const bookService = new BookService(MongoDB.client);
     const book = await bookService.decreaseQuantity(req.body?.MASACH);
-    if (book.SO_QUYEN < 1) {
+    if (book.SO_QUYEN_SAN_CO < 1) {
       return next(
         new ApiError(
           400,
@@ -83,7 +83,11 @@ exports.update = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   try {
     const trackingService = new TrackingService(MongoDB.client);
-    const document = await trackingService.delete(req.params.id);
+    const document = await trackingService.delete(req.body._id);
+
+    const bookService = new BookService(MongoDB.client);
+    const book = await bookService.increaseQuantity(req.body?.MASACH);
+
     if (!document) {
       return next(new ApiError(404, "Tracking not found"));
     }
@@ -97,27 +101,47 @@ exports.delete = async (req, res, next) => {
     );
   }
 };
-exports.deleteAll = async (req, res, next) => {
-  try {
-    const trackingService = new TrackingService(MongoDB.client);
-    const deletedCount = await trackingService.deleteAll();
-    return res.send({
-      message: `${deletedCount} trackings were deleted successfully`,
-    });
-  } catch (error) {
-    return next(
-      new ApiError(500, "An error occurred while removing all trackings")
-    );
-  }
-};
-// exports.findAllFavorite = async (req, res, next) => {
+// exports.deleteAll = async (req, res, next) => {
 //   try {
 //     const trackingService = new TrackingService(MongoDB.client);
-//     const documents = await trackingService.findFavorite();
-//     return res.send(documents);
+//     const deletedCount = await trackingService.deleteAll();
+//     return res.send({
+//       message: `${deletedCount} trackings were deleted successfully`,
+//     });
 //   } catch (error) {
 //     return next(
-//       new ApiError(500, "An error occurred while retrieving favorite trackings")
+//       new ApiError(500, "An error occurred while removing all trackings")
 //     );
 //   }
 // };
+exports.findByMaDocGia = async (req, res, next) => {
+  let documents = [];
+
+  try {
+    // console.log("sReceived params:", req.params); // Debug xem MADOCGIA có tồn tại không
+
+    const trackingService = new TrackingService(MongoDB.client);
+
+    // Đảm bảo MADOCGIA được truyền đúng
+    const { MADOCGIA } = req.params;
+    if (!MADOCGIA) {
+      return res.status(400).json({ message: "MADOCGIA is required" });
+    }
+
+    documents = await trackingService.findByMaDocGia(MADOCGIA);
+
+    if (!documents) {
+      return res
+        .status(404)
+        .json({ message: "No document found with the given MADOCGIA" });
+    }
+
+    // return res.json({ document });
+  } catch (error) {
+    console.error("Error in findByMaDocGia:", error);
+    return next(
+      new ApiError(500, "An error occurred while retrieving tracking data")
+    );
+  }
+  return res.send(documents);
+};
